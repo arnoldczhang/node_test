@@ -4,7 +4,6 @@ var http = require("http");
 var httpServer = http.createServer(function (req, res) {
     res.write('hello world');
     res.write('hello world');
-    res.write('hello world');
     res.end('hello world');
 });
 httpServer.listen(3000, function () {
