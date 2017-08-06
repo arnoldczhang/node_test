@@ -1,0 +1,6 @@
+###utility
+getParamNames：获取方法参数名
+setImmediate：polyfill
+try：优化版try...catch
+dig：对arguments的reduce
+argumentsToArray：toArray
