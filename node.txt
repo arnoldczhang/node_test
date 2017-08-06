@@ -4,3 +4,27 @@ setImmediate：polyfill
 try：优化版try...catch
 dig：对arguments的reduce
 argumentsToArray：toArray
+base64encode：加密方式
+base64decode
+md5
+sha1
+sha256
+hmac
+isSafeNumberString：安全数字（Number.MAX_SAFE_INTEGER || Math.pow(2, 53) - 1）
+toSafeNumber：
+random：范围随机数
+randomString：随机字符串
+splitAlwaysOptimized：string split to array
+replaceInvalidHttpHeaderChar：根据unicode编码表，判断http请求头字符
+includesInvalidHttpHeaderChar
+randomSlice：随机截取一定长度的数组元素
+spliceOne：去除array中一个元素
+accessLogDate：输出16/Apr/2013:16:40:09 +0800日期格式
+logDate：输出YYYY-MM-DD HH:mm:ss.SSS日期格式
+YYYYMMDDHHmmss
+YYYYMMDD
+datestruct
+timestamp
+map：生成纯洁obj
+encodeURIComponent
+decodeURIComponent
