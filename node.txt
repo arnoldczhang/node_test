@@ -28,3 +28,5 @@ timestamp
 map：生成纯洁obj
 encodeURIComponent
 decodeURIComponent
+
+###co
