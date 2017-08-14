@@ -10,12 +10,25 @@ const koa = require('koa');
 const app = new koa();
 
 app.use(async (ctx, next) => {
-  ctx.body = 'Hello World';
+  ctx.body = 'Hello World'; // res.end(ctx.body);
 }).listen(3000, () => {
   console.log('koa app start at port 3000');
 });
 
 
+
+
+// listen
+const server = http.createServer(/*function callback*/(req, res) => {
+
+});
+
+server.listen(3000, () => {
+
+});
+
+// use
+this.middleware.push(fn);
 
 
 
