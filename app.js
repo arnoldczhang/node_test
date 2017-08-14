@@ -1,37 +1,34 @@
 const express = require('express');
 const utility = require('utility');
+const http = require('http');
 const superagent = require('superagent');
 const cheerio = require('cheerio');
-const app = express();
+// const app = express();
 const co = require('co');
+const koa = require('koa');
 
-const say = () => {
-  return new Promise((res, rej) => {
-    console.log('say');
-  }).then((res) => {
-    return 'hello';
-  });
-};
+const app = new koa();
 
-const hello = (hello) => {
-  return new Promise((res, rej) => {
-    console.log('hello');
-    return 'world';
-  });
-};
-
-const world = () => {
-  return new Promise((res, rej) => {
-    console.log('world');
-  });
-};
-
-co(function* () {
-  yield say();
-  yield hello();
-  yield world();
+app.use(async (ctx, next) => {
+  ctx.body = 'Hello World';
+}).listen(3000, () => {
+  console.log('koa app start at port 3000');
 });
 
+
+
+
+
+
+// http.createServer(function(req,res){
+//     res.writeHead(200,{
+//         "content-type":"text/plain"
+//     });
+//     res.write("hello nodejs");
+//     res.end();
+// }).listen(3001, () => {
+//   console.log('start');
+// });
 
 
 

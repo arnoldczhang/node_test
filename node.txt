@@ -1,4 +1,4 @@
-###utility
+#########utility
 getParamNames：获取方法参数名
 setImmediate：polyfill
 try：优化版try...catch
@@ -29,10 +29,50 @@ map：生成纯洁obj
 encodeURIComponent
 decodeURIComponent
 
-###co
-###http
-http.createServer(function (req, res) {
-  // TODO
+
+
+#########co
+co(fn*).then( val => )
+var fn = co.wrap(fn*)
+例1：
+const say = () => {
+  return new Promise((res, rej) => {
+    res('say');
+  });
+};
+
+const hello = (pre) => {
+  return new Promise((res, rej) => {
+    res(`${pre} hello`);
+  });
+};
+
+const world = (pre) => {
+  return new Promise((res, rej) => {
+    res(`${pre} world`);
+  });
+};
+
+co(function* () {
+  var _say = yield say();
+  var _sayHello = yield hello(_say);
+  var _sayHelloWorld = yield world(_sayHello);
+
+  console.log(_sayHelloWorld);
+});
+
+
+
+#########http
+例1：
+http.createServer(function(req,res){
+    res.writeHead(200,{
+        "content-type":"text/plain"
+    });
+    res.write("hello nodejs");
+    res.end();
+}).listen(3001, () => {
+  console.log('start');
 });
 
 #http.js
@@ -104,6 +144,13 @@ EventEmitter.prototype.on = function () {
 EventEmitter.prototype.emit = function () {
   ...
 };
+
+
+
+#########koa
+listen
+use
+
 
 
 
