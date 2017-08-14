@@ -30,3 +30,94 @@ encodeURIComponent
 decodeURIComponent
 
 ###co
+###http
+http.createServer(function (req, res) {
+  // TODO
+});
+
+#http.js
+function createServer () {
+  return new Server(arguments);
+};
+
+#_http_server.js
+const common = require('_http_common');
+const parsers = common.parsers;
+
+function Server (requestListener) {
+  var parser = parsers.alloc();
+  net.Server.call(this);
+  ...
+  this.on('request', requestListener);
+  this.on('connection', function (socket) {
+    socket.on('timeout', socketOnTimeout);
+    socket.on('error', socketOnError);
+    ...
+    parser.onIncoming = function () {
+      ...
+      this.on('finish', finishFunc);
+      this.emit('request', req, res);
+    }
+  });
+};
+
+;
+
+#net.js
+function Server () {
+  EventEmitter.call(this);
+};
+
+Server.prototype.listen = function () {
+  ...
+  listenInCluster ();
+  
+};
+
+function listenInCluster (server, address, port, addressType,
+                     backlog, fd, exclusive) {
+  server._listen2(address, port, addressType,
+                         backlog, fd, exclusive);
+};
+
+Server.prototype._listen2 = function (address, port, addressType, backlog, fd) {
+  this._handle.onconnection = function (error) {
+    if (error) {
+      this.emit('error');
+    }
+
+    else {
+      this.emit('connection', socket);
+    }
+  };
+};
+
+#events.js
+function EventEmitter () {
+  
+};
+
+EventEmitter.prototype.on = function () {
+  ...
+};
+
+EventEmitter.prototype.emit = function () {
+  ...
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
