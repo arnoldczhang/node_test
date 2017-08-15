@@ -7,10 +7,59 @@ const cheerio = require('cheerio');
 const co = require('co');
 const koa = require('koa');
 
+
+
+
+class Nginx {
+  constructor(props) {
+  }
+
+  callback() {
+
+    return (req, res) => {
+
+    };
+  }
+
+  use(fn) {
+    if (typeof fn === 'function') {
+      this.middleware.push(fn);
+    }
+  }
+
+  listen(...args) {
+    this.server = http.createServer(this.callback());
+    this.server.listen(...args);
+  }
+}
+
+// const server = new Nginx();
+
+// server.listen(3001, () => {
+
+// });
+
+
+
+
+
+
+
+
+
+
 const app = new koa();
 
 app.use(async (ctx, next) => {
-  ctx.body = 'Hello World'; // res.end(ctx.body);
+  const start = Date.now();
+  ctx.body = 'a a a';
+  await next();
+  const ms = Date.now() - start;
+  console.log(`${ctx.method} ${ctx.url} - ${ms}ms`);
+}).use((ctx, next) => {
+  // ctx.body = 'bbbbbbbbbbb';
+  // ctx.response.body = 'bbaa';
+  console.log(ctx.response.body === ctx.body);
 }).listen(3000, () => {
   console.log('koa app start at port 3000');
 });
@@ -18,17 +67,17 @@ app.use(async (ctx, next) => {
 
 
 
-// listen
-const server = http.createServer(/*function callback*/(req, res) => {
+// // listen
+// const server = http.createServer(/*function callback*/(req, res) => {
 
-});
+// });
 
-server.listen(3000, () => {
+// server.listen(3000, () => {
 
-});
+// });
 
-// use
-this.middleware.push(fn);
+// // use
+// this.middleware.push(fn);
 
 
 

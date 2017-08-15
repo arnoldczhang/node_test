@@ -31,6 +31,10 @@ decodeURIComponent
 
 
 
+
+
+
+
 #########co
 co(fn*).then( val => )
 var fn = co.wrap(fn*)
@@ -60,6 +64,10 @@ co(function* () {
 
   console.log(_sayHelloWorld);
 });
+
+
+
+
 
 
 
@@ -100,8 +108,6 @@ function Server (requestListener) {
     }
   });
 };
-
-;
 
 #net.js
 function Server () {
@@ -147,10 +153,45 @@ EventEmitter.prototype.emit = function () {
 
 
 
-#########koa
-listen
-use
 
+
+
+#########koa
+__proto__
+  listen(...args)
+    http.createServer(this.callback()).listen(...args);
+  toJSON
+  inspect
+  use(fn)
+    if (isGenerator(fn)) {
+      warn('deprecate')
+    }
+
+    else {
+      this.middleware.push(fn);
+    }
+  callback()
+    const fn = compose(this.middleware);
+    return (req, res) => {
+      this.ctx = this.createContext(req, res);
+      const handleRes = () => respond(this.ctx);
+      const handleErr = err => this.ctx.onerror(err);
+      fn(this.ctx).then(handleRes).catch(handleErr);
+    };
+  createContext(req, res)
+    const ctx = Object.create(context);
+    ctx.response = Object.create(this.response);
+    ctx.request = Object.create(this.request);
+    ctx.res = res;
+    ctx.req = res;
+    return ctx;
+  onerror
+__fn__
+  respond(ctx)
+    const body = ctx.body;
+    if (isString(body) || ...) {
+      res.end(body);
+    }
 
 
 
