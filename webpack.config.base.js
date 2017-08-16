@@ -8,6 +8,7 @@ module.exports = function (config) {
     },
     output: {
       path: path.resolve(__dirname, './dist'),
+      publicPath: '/',
       filename: '[name].min.js'
     },
 
@@ -15,8 +16,11 @@ module.exports = function (config) {
       new webpack.optimize.UglifyJsPlugin({
         mangle: config.mangle || false,
         compress: {warnings: false}
-      })
-    ] : [],
+      }),
+      new webpack.HotModuleReplacementPlugin()
+    ] : [
+      new webpack.HotModuleReplacementPlugin()
+    ],
     module: {
       rules: [
         {
@@ -24,6 +28,9 @@ module.exports = function (config) {
           loader: 'style-loader!css-loader?modules&localIdentName=[local]___[hash:base64:5]!postcss-loader!less-loader'
         }
       ]
-    } 
+    },
+    node: {
+      net: 'empty'
+    }
   };
 };

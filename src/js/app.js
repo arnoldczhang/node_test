@@ -1,14 +1,15 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-var utility = require("utility");
-var express = require("express");
-var app = express();
-app.get('/', function (req, res) {
-    var q = req.query.q;
-    var md5Value = utility.md5(q);
-    res.send(md5Value);
-});
-app.listen(3000, function (req, res) {
-    console.log('app is running at port 3000');
+var koa = require('koa');
+var Hello_1 = require('./Hello');
+var client_1 = require('./client');
+var server_1 = require('react-dom/server');
+var app = new koa();
+function renderFullPage(html, initialState) {
+    return "\n    <!DOCTYPE html>\n    <html lang=\"en\">\n    <head>\n      <meta charset=\"UTF-8\">\n    </head>\n    <body>\n      <div id=\"root\">\n          " + html + "\n      </div>\n      <script>\n        window.__INITIAL_STATE__ = " + JSON.stringify(initialState) + ";\n      </script>\n      <script>" + client_1.default + "</script>\n    </body>\n    </html>\n  ";
+}
+app.use(function (ctx) {
+    ctx.body = renderFullPage(server_1.renderToString(Hello_1.default('aa')), {});
+}).listen(3000, function () {
+    console.log('server started');
 });
 //# sourceMappingURL=app.js.map
