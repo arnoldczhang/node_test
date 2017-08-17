@@ -1,18 +1,74 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <title>test</title>
-        <meta content="text/html; charset=utf-8">
-        <meta charset="utf-8">
-        <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no">
-        <meta name="format-detection" content="telephone=no">
-        <meta name="format-detection" content="email=no">
-        <meta name="apple-mobile-web-app-capable" content="yes">
-        <meta name="apple-mobile-web-app-status-bar-style" content="black">
-    </head>
-    <body>
-        <div id="container"></div>
-        <script type="text/javascript">
-        </script>
-    </body>
+<head>
+<title>test</title>
+<meta content="text/html; charset=utf-8">
+<meta charset="utf-8">
+<meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="format-detection" content="telephone=no">
+<meta name="format-detection" content="email=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+</head>
+<body>
+<div id="container"></div>
+<script type="text/javascript">
+// context
+var context = {
+  body: {},
+  response: {},
+  request: {}
+};
+
+Object.defineProperties(context.response, {
+  body: {
+    get: function () {
+      return context.body;
+    },
+    set: function (value) {
+      context.body = value;
+    }
+  }
+});
+
+// response
+var response = {};
+Object.defineProperty(response, 'body', {
+  get: function () {
+    return this._body;
+  },
+  set: function (value) {
+    this._body = value;
+  }
+});
+
+// request
+var request = {};
+
+function Koa () {
+  this.context = Object.create(context);
+  this.response = Object.create(response);
+  this.request = Object.create(request);
+  this.context.response = Object.create(this.response);
+  // this.response.context = this.context;
+};
+
+Koa.prototype = {
+  use: function (cb) {
+    cb(this.context);
+    return this;
+  }
+};
+
+var app = new Koa();
+
+app.use(function (ctx) {
+  ctx.body = 'aa';
+}).use(function (ctx) {
+  ctx.response.body = 'bb';
+}).use(function (ctx) {
+  console.log(ctx.body);
+});
+</script>
+</body>
 </html>

@@ -2,6 +2,10 @@
   "compileOnSave": true,
   "compilerOptions": {
     "jsx": "react",
+    "lib": [
+      "dom",
+      "es2015"
+    ],
     "declaration": true,
     "target": "es5", //编译为es5的代码
     "module": "commonjs",//模块化方式，还有commonjs，amd等
@@ -16,10 +20,10 @@
     "strictNullChecks": true,
     "removeComments": true,
     "preserveConstEnums": true,
-    "sourceMap": true
+    "sourceMap": true,
+    "allowJs": true
   },
   "include": [
-      "src/**/*"
   ],
   "exclude": [
       "node_modules"
