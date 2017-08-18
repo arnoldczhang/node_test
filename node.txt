@@ -157,6 +157,7 @@ EventEmitter.prototype.emit = function () {
 
 
 #########koa
+#koa
 __proto__
   listen(...args)
     http.createServer(this.callback()).listen(...args);
@@ -193,10 +194,77 @@ __fn__
       res.end(body);
     }
 
+#koa-router
+例：
+const router = require('koa-router')();
+router.get('/', list)
+  .get('/post/new', add)
+  .get('/post/:id', show)
+  .post('/post', create);
+app.use(router.routes());
 
+实现
+__proto__
+  get
+  post
+    this.stack.push(new Layer(method, path, middleware));
+  use
+    function () {
+      return function dispatch (ctx, next) {
+        const memo = [];
+        this.stack.forEach(() => {
+          ...
+          memo.push(...);
+        });
 
+        return compose(memo)(ctx, next);
+      };
+    };
 
+#koa-view
+例：
+const views = require('koa-views');
+const path = require('path');
+views(path.join(__dirname, '/../views'), {
+  map: { html: 'swig' }
+});
 
+实现
+function viewsMiddleware (path, opts) {
+  const renderEngine = engines[opts.html];
+  return function (ctx, next) {
+    if (ctx.render) return;
+
+    ctx.render = function (realpath, params) {
+      ...
+      return renderEngine(getFile(path, realpath), params)
+        .then((html) => {
+          ctx.body = html;
+        });
+    };
+
+  };
+};
+
+#koa-body
+例：
+const koaBody = require('koa-body');
+app.use(koaBody());
+
+实现
+function requestbody (opts) {
+  return function (ctx, next) {
+    if (ctx.is('json')) {
+      ...
+    } else if (ctx.is('urlencoded')) {
+      ...
+    } else if (ctx.is('text')) {
+      ...
+    } else if (ctx.is('multipart')) {
+      ...
+    }
+  };
+}
 
 
 
