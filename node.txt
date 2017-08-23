@@ -266,6 +266,28 @@ function requestbody (opts) {
   };
 }
 
+#koa-compose
+function compose (middleware) {
+  ...
+  const length = middleware.length;
+  return (ctx, next) => {
+    const dispatch = (index) => {
+      const fn = middleware[index];
+
+      if (index >= length) {
+        return;
+      }
+
+      else {
+        return Promise.resolve(fn(ctx, () => {
+          return dispatch(index + 1);
+        }));
+      }
+    };
+    return dispatch(0);
+  };
+}
+
 
 
 
