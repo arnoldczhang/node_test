@@ -288,6 +288,58 @@ function compose (middleware) {
   };
 }
 
+#koa-session
+例：
+const session = require('koa-session');
+app.use(session(app));
+
+app.use(ctx => {
+  console.log(ctx.session);
+  ctx.session = ...;
+  ...
+})
+
+实现
+const session = (opts, app) => {
+  if (opts && opts.use) {
+    app = opts;
+  }
+
+  Object.defineProperties(app.context, {
+    [CONTEXT_SESSION]: {
+      get() {
+        if (!this[CONTEXT_SESSION]) {
+          this[CONTEXT_SESSION] = new ContextSession(this, opts);
+        }
+      },
+    },
+    session: {
+      get() {
+        return this.session;
+      },
+      set(val) {
+        this.session = val;
+      }
+    },
+    sessionOptions: {
+      get() {
+
+      }
+    },
+  });
+
+  return (ctx, next) => {
+
+  };
+};
+
+const ContextSession = (app, opts) {
+  this.session = new Session(...);
+};
+
+
+
+
 
 
 
