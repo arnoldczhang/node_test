@@ -12,7 +12,7 @@ const koa = require('koa');
 const url= require("url");
 const fs = require('fs');
 const tls = require('tls');
-
+const Buffer = require('buffer').Buffer;
 // const proxy = httpProxy.createProxyServer({
 //   target: {
 //     host: '127.0.0.1',
@@ -115,36 +115,99 @@ const tls = require('tls');
 //   console.log('8001 start');
 // });
 
-const proxy = httpProxy.createProxyServer({
-  target:'http://localhost:8002'
-}).listen(8001);
+// const proxy = httpProxy.createProxyServer({
+//   target:'http://localhost:8002'
+// }).listen(8001);
 
-http.createServer(onRequest).listen(8002, () => {
-  console.log('8002 started');
-});
+http.createServer((req, userRes) => {
+  const host = req.headers.host;
+  const protocol = (!!req.connection.encrypted && !/^http:/.test(req.url)) ? "https" : "http";
+  const fullUrl = protocol === "http" ? req.url : (protocol + '://' + host + req.url);
+  const urlPattern = url.parse(fullUrl);
+  const path = urlPattern.path;
 
-function onRequest(client_req, client_res) {
-  // console.log('serve: ' + client_req.url);
-  console.log(client_req.headers.host);
-  const host = client_req.headers.host;
-  client_res.setHeader('Access-Control-Allow-Origin', "*");
-  var options = {
-    hostname: host,
-    port: 80,
-    path: client_req.url,
-    method: 'GET'
+  let reqData;
+  let resourceInfo = {
+      host,
+      method : req.method,
+      path,
+      protocol,
+      url : protocol + "://" + host + path,
+      req,
+      startTime : new Date().getTime(),
   };
 
-  var proxy = http.request(options, function (res) {
-    res.pipe(client_res, {
-      end: true
+  const postData = [];
+  req.on("data", chunk => {
+      postData.push(chunk);
+  });
+
+  req.on("end", () => {
+      reqData = Buffer.concat(postData);
+      resourceInfo.reqBody = reqData.toString();
+  });
+
+  console.log(host);
+
+  const options = {
+      hostname : host,
+      port : urlPattern.port || req.port || (/https/.test(protocol) ? 443 : 80),
+      path,
+      method : req.method,
+      headers : req.headers
+  };
+
+  const proxy = (/https/.test(protocol) ? https : http).request(options, (res) => {
+    const statusCode = res.statusCode;
+    const resData = [];
+    res.on("data", chunk => {
+        resData.push(chunk);
+    });
+
+    res.on('end', () => {
+      const serverResData = Buffer.concat(resData);
+      // userRes.end();
+      // userRes.end(serverResData);
+    });
+
+    res.on('error',function(error){
+        console.log('error' + error);
     });
   });
 
-  client_req.pipe(proxy, {
-    end: true
+  proxy.on('error', (err) => {
+    console.log('proxy error' + err);
+    userRes.end('world');
+    // userRes.end(serverResData);
   });
-}
+
+  proxy.end(reqData);
+}).listen(8001, () => {
+  console.log('8001 started');
+});
+
+// function onRequest(req, res) {
+//   // console.log('serve: ' + req.url);
+//   const host = req.headers.host;
+//   console.log(host);
+//   res.setHeader('Access-Control-Allow-Origin', "*");
+//   var options = {
+//     hostname: host,
+//     port: 80,
+//     path: req.url,
+//     method: 'GET'
+//   };
+
+//   // var proxy = http.request(options, function (res) {
+//   //   res.pipe(res, {
+//   //     end: true
+//   //   });
+//   // });
+
+//   // req.pipe(proxy, {
+//   //   end: true
+//   // });
+// }
 
 
 
