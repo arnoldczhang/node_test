@@ -27,43 +27,43 @@ const tls = require('tls');
 //   res.end('Something went wrong. And we are reporting a custom error message.');  
 // });
 
-const options = {
-  // rootDirPath: util.getUserHome() + '/.anyproxy_certs',
-  defaultCertAttrs: [
-    { name: 'countryName', value: 'CN' },
-    { name: 'organizationName', value: 'test_proxy' },
-    { shortName: 'ST', value: 'SH' },
-    { shortName: 'OU', value: 'test_proxy SSL Proxy' }
-  ]
-};
+// const options = {
+//   // rootDirPath: util.getUserHome() + '/.anyproxy_certs',
+//   defaultCertAttrs: [
+//     { name: 'countryName', value: 'CN' },
+//     { name: 'organizationName', value: 'test_proxy' },
+//     { shortName: 'ST', value: 'SH' },
+//     { shortName: 'OU', value: 'test_proxy SSL Proxy' }
+//   ]
+// };
 
-const createServer = (key, cert) => {
-  const server = https.createServer({
-    key: fs.readFileSync(key) || fs.readFileSync('key.pem'),
-    cert: fs.readFileSync(cert) || fs.readFileSync('certificate.pem'),
-  }, (req, res) => {
-    console.log('Proxying https request at %s', new Date());
-    res.writeHead(200);
-    res.end('hello world\n');
-  });
+// const createServer = (key, cert) => {
+//   const server = https.createServer({
+//     key: fs.readFileSync(key) || fs.readFileSync('key.pem'),
+//     cert: fs.readFileSync(cert) || fs.readFileSync('certificate.pem'),
+//   }, (req, res) => {
+//     console.log('Proxying https request at %s', new Date());
+//     res.writeHead(200);
+//     res.end('hello world\n');
+//   });
 
-  server.listen(8000, () => {
-    console.log('server bound');
-  });
-};
+//   server.listen(8000, () => {
+//     console.log('server bound');
+//   });
+// };
 
-const easyCert = new EasyCert(options);
-const rootOptions = {
-  commonName: 'test_proxy',
-  overwrite: true,
-};
+// const easyCert = new EasyCert(options);
+// const rootOptions = {
+//   commonName: 'test_proxy',
+//   overwrite: true,
+// };
 
-easyCert.generateRootCA(rootOptions, (err, key, cert) => {
-  if (!err) {
-    console.log(key, cert);
-    createServer(key, cert);
-  }
-});
+// easyCert.generateRootCA(rootOptions, (err, key, cert) => {
+//   if (!err) {
+//     console.log(key, cert);
+//     createServer(key, cert);
+//   }
+// });
 
 // else {
 //   easyCert.getCertificate('127.0.0.1', (err, key, cert) => {
@@ -92,8 +92,7 @@ easyCert.generateRootCA(rootOptions, (err, key, cert) => {
 
 
 
-
-
+// const proxy = httpProxy.createProxyServer({});
 // const server = http.createServer(function(req, res) {
 //   const host = req.headers.host;
 //   const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
@@ -101,6 +100,7 @@ easyCert.generateRootCA(rootOptions, (err, key, cert) => {
 //   switch(host){
 //     case 'takeaway.51ping.com':
 //       proxy.web(req, res, { target: `${host}:80` });
+//       break;
 //     default:
 //       res.writeHead(200, {
 //           'Content-Type': 'text/plain'
@@ -111,9 +111,40 @@ easyCert.generateRootCA(rootOptions, (err, key, cert) => {
 //   console.log('ip=====>' + ip);
 // });
 
-// server.listen(8888, () => {
-//   console.log('8888 start');
+// server.listen(8001, () => {
+//   console.log('8001 start');
 // });
+
+const proxy = httpProxy.createProxyServer({
+  target:'http://localhost:8002'
+}).listen(8001);
+
+http.createServer(onRequest).listen(8002, () => {
+  console.log('8002 started');
+});
+
+function onRequest(client_req, client_res) {
+  // console.log('serve: ' + client_req.url);
+  console.log(client_req.headers.host);
+  const host = client_req.headers.host;
+  client_res.setHeader('Access-Control-Allow-Origin', "*");
+  var options = {
+    hostname: host,
+    port: 80,
+    path: client_req.url,
+    method: 'GET'
+  };
+
+  var proxy = http.request(options, function (res) {
+    res.pipe(client_res, {
+      end: true
+    });
+  });
+
+  client_req.pipe(proxy, {
+    end: true
+  });
+}
 
 
 
