@@ -12,6 +12,9 @@ const koa = require('koa');
 const url= require("url");
 const fs = require('fs');
 const tls = require('tls');
+const async = require('async');
+const changeCase = require('change-case');
+const zlib = require('zlib');
 const Buffer = require('buffer').Buffer;
 // const proxy = httpProxy.createProxyServer({
 //   target: {
@@ -119,69 +122,178 @@ const Buffer = require('buffer').Buffer;
 //   target:'http://localhost:8002'
 // }).listen(8001);
 
+var lower_keys = function(obj){
+    for(var key in obj){
+        var val = obj[key];
+        delete obj[key];
+
+        obj[key.toLowerCase()] = val;
+    }
+
+    return obj;
+};
+
+var upper_keys = function (obj) {
+    var upperObject = {};
+    for(var key in obj) {
+        var upperKey = changeCase.headerCase(key);
+        upperObject[upperKey] = obj[key];
+    }
+
+    return upperObject;
+};
+
 http.createServer((req, userRes) => {
-  const host = req.headers.host;
-  const protocol = (!!req.connection.encrypted && !/^http:/.test(req.url)) ? "https" : "http";
-  const fullUrl = protocol === "http" ? req.url : (protocol + '://' + host + req.url);
-  const urlPattern = url.parse(fullUrl);
-  const path = urlPattern.path;
+  var host               = req.headers.host,
+        protocol           = (!!req.connection.encrypted && !/^http:/.test(req.url)) ? "https" : "http",
+        fullUrl            = protocol === "http" ? req.url : (protocol + '://' + host + req.url),
+        urlPattern         = url.parse(fullUrl),
+        path               = urlPattern.path,
+        resourceInfo,
+        resourceInfoId     = -1,
+        reqData;
 
-  let reqData;
-  let resourceInfo = {
-      host,
-      method : req.method,
-      path,
-      protocol,
-      url : protocol + "://" + host + path,
-      req,
-      startTime : new Date().getTime(),
-  };
+    // console.log(req.url);
+    // console.log(path);
 
-  const postData = [];
-  req.on("data", chunk => {
-      postData.push(chunk);
-  });
+    //record
+    resourceInfo = {
+        host      : host,
+        method    : req.method,
+        path      : path,
+        protocol  : protocol,
+        url       : protocol + "://" + host + path,
+        req       : req,
+        startTime : new Date().getTime()
+    };
 
-  req.on("end", () => {
-      reqData = Buffer.concat(postData);
-      resourceInfo.reqBody = reqData.toString();
-  });
+    console.log("\nreceived request to : " + host + path);
 
-  console.log(host);
+    //get request body and route to local or remote
+    async.series([
+        fetchReqData,
+        routeReq
+    ],function(){
 
-  const options = {
-      hostname : host,
-      port : urlPattern.port || req.port || (/https/.test(protocol) ? 443 : 80),
-      path,
-      method : req.method,
-      headers : req.headers
-  };
-
-  const proxy = (/https/.test(protocol) ? https : http).request(options, (res) => {
-    const statusCode = res.statusCode;
-    const resData = [];
-    res.on("data", chunk => {
-        resData.push(chunk);
     });
 
-    res.on('end', () => {
-      const serverResData = Buffer.concat(resData);
-      // userRes.end();
-      // userRes.end(serverResData);
-    });
+    //get request body
+    function fetchReqData(callback){
+        var postData = [];
+        req.on("data",function(chunk){
+            postData.push(chunk);
+        });
+        req.on("end",function(){
+            reqData = Buffer.concat(postData);
+            resourceInfo.reqBody = reqData.toString();
+            callback();
+        });
+    }
 
-    res.on('error',function(error){
-        console.log('error' + error);
-    });
-  });
+    //route to dealing function
+    function routeReq(callback){
+        console.log("==>will forward to real server by proxy");
+        dealWithRemoteResonse(callback);
+    }
 
-  proxy.on('error', (err) => {
-    console.log('proxy error' + err);
-    userRes.end('world');
-    // userRes.end(serverResData);
-  });
+    function dealWithRemoteResonse(callback){
+        var options;
 
-  proxy.end(reqData);
+        //modify request options
+        options = {
+            hostname : urlPattern.hostname || req.headers.host,
+            port     : urlPattern.port || req.port || (/https/.test(protocol) ? 443 : 80),
+            path     : path,
+            method   : req.method,
+            headers  : req.headers
+        };
+
+        options.rejectUnauthorized = false;
+        try{
+            delete options.headers['accept-encoding']; //avoid gzipped response
+        }catch(e){}
+
+        //update request data
+        options.headers = lower_keys(options.headers);
+        options.headers["content-length"] = reqData.length; //rewrite content length info
+
+        options.headers = upper_keys(options.headers);
+
+        //send request
+        var proxyReq = ( /https/.test(protocol) ? https : http).request(options, function(res) {
+
+            //deal response header
+            var statusCode = res.statusCode;
+
+            var resHeader = res.headers;
+            resHeader = lower_keys(resHeader);
+
+            // remove gzip related header, and ungzip the content
+            // note there are other compression types like deflate
+            var ifServerGzipped =  /gzip/i.test(resHeader['content-encoding']);
+            if(ifServerGzipped){
+                delete resHeader['content-encoding'];
+            }
+            delete resHeader['content-length'];
+
+            userRes.writeHead(statusCode, resHeader);
+
+            //deal response data
+            var length,
+                resData = [];
+
+            res.on("data",function(chunk){
+                resData.push(chunk);
+            });
+
+            res.on("end",function(){
+                var serverResData;
+
+                async.series([
+
+                    //ungzip server res
+                    function(callback){
+                        serverResData     = Buffer.concat(resData);
+                        if(ifServerGzipped ){
+                            zlib.gunzip(serverResData,function(err,buff){
+                                serverResData = buff;
+                                callback();
+                            });
+                        }else{
+                            callback();
+                        }
+
+                    //get custom response
+                    },function(callback){
+                      userRes.end(serverResData);
+                      callback();
+                    //udpate record info
+                    },function(callback){
+                        resourceInfo.endTime    = new Date().getTime();
+                        resourceInfo.statusCode = statusCode;
+                        resourceInfo.resHeader  = resHeader;
+                        resourceInfo.resBody    = serverResData;
+                        resourceInfo.length     = serverResData ? serverResData.length : 0;
+                        callback();
+                    }
+                ],function(err,result){
+                    callback && callback();
+                });
+
+            });
+            res.on('error',function(error){
+                console.log('error' + error);
+            });
+
+        });
+
+        proxyReq.on("error",function(e){
+            console.log("err with request :" + e + "  " + req.url);
+            userRes.end();
+        });
+
+        proxyReq.end(reqData);
+    }
 }).listen(8001, () => {
   console.log('8001 started');
 });
