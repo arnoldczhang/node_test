@@ -36,7 +36,7 @@ const upper = (obj) => {
   return upperObject;
 };
 
-const replaceReqData = (req, res, data) => {
+const replaceReqData = (req, data) => {
   // 请求数据处理
   return data;
 };
@@ -44,6 +44,22 @@ const replaceReqData = (req, res, data) => {
 const replaceResData = (req, res, data) => {
   // 返回数据处理
   return data;
+};
+
+const replaceResHeader = (req, res, header) => {
+  // 返回头
+  const host = header.host;
+  const cookie = header.cookie;
+  if (/\.51ping\.com/.test(host)) {
+    if (cookie) {
+      const dper = (cookie.match(/dper=([^;]+)/) || [])[1];
+      if (dper) {
+        console.log('dper=============>', dper);
+        header["Set-Cookie"] = `dper=${dper}; Path=/; domain=.51ping.com; HttpOnly`;
+      }
+    }
+  }
+  return header;
 };
 
 http.createServer((req, userRes) => {
@@ -73,7 +89,7 @@ http.createServer((req, userRes) => {
     });
     req.on("end", () => {
       reqData = Buffer.concat(postData);
-      reqData = replaceReqData(req, res, reqData);
+      reqData = replaceReqData(req, reqData);
       resourceInfo.reqBody = reqData.toString();
       callback();
     });
@@ -82,7 +98,7 @@ http.createServer((req, userRes) => {
   const bindResResolver = (callback) => {
     const isSecure = /https/.test(protocol);
     const options = {
-      hostname: urlPattern.hostname || req.headers.host,
+      hostname: urlPattern.hostname || host,
       port: urlPattern.port || req.port || (isSecure ? 443 : 80),
       path,
       method: req.method,
@@ -101,30 +117,19 @@ http.createServer((req, userRes) => {
     options.headers = upper(options.headers);
 
     const proxyReq = (isSecure ? https : http).request(options, function(res) {
-        var statusCode = res.statusCode;
-        var resHeader = res.headers;
+      const statusCode = res.statusCode;
+      const resHeader = res.headers;
+      replaceResHeader(req, res, resHeader);
+      resHeader = lower(resHeader);
+      const ifServerGzipped =  /gzip/i.test(resHeader['content-encoding']);
+      if(ifServerGzipped){
+          delete resHeader['content-encoding'];
+      }
+      delete resHeader['content-length'];         
+      userRes.writeHead(statusCode, resHeader);
 
-        if (/\.51ping\.com/.test(host)) {
-          const cookie = req.headers.cookie;
-          if (cookie) {
-            const dper = (cookie.match(/dper=([^;]+)/) || [])[1];
-            if (dper) {
-              resHeader["Set-Cookie"] = `dper=${dper}; Path=/; domain=.51ping.com; HttpOnly`;
-            }
-          }
-        }
-
-        resHeader = lower_keys(resHeader);
-        var ifServerGzipped =  /gzip/i.test(resHeader['content-encoding']);
-        if(ifServerGzipped){
-            delete resHeader['content-encoding'];
-        }
-        delete resHeader['content-length'];         
-
-        userRes.writeHead(statusCode, resHeader);
-
-        var length,
-            resData = [];
+      var length,
+          resData = [];
 
         res.on("data",function(chunk){
             resData.push(chunk);
@@ -145,6 +150,7 @@ http.createServer((req, userRes) => {
                         callback();
                     }
                 },function(callback){
+                  serverResData = replaceResData(req, res, serverResData);
                   userRes.end(serverResData);
                   callback();
                 },function(callback){
@@ -167,10 +173,9 @@ http.createServer((req, userRes) => {
     });
 
     proxyReq.on("error",function(e){
-        console.log("err with request :" + e + "  " + req.url);
-        userRes.end();
+      console.log("err with request :" + e + "  " + req.url);
+      userRes.end();
     });
-
     proxyReq.end(reqData);
   };
   //
