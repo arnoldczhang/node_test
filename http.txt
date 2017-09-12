@@ -1,0 +1,104 @@
+TCP/IP协议层
+  -应用
+    -HTTP
+    -FTP（文本传输协议）
+    -DNS（域名系统）
+      -解析域名->IP地址
+  -传输
+    -TCP（传输控制协议）
+      -字节流服务，大数据分割成报文段
+      -三次握手（SYN、ACK）
+    -UDP（用户数据报协议）
+  -网络
+    -ICMP
+    -IGMP
+    -IP（网际协议）
+      -IP地址（节点被分配到的地址）
+      -MAC地址（网卡所属固有地址）
+  -数据链路
+    -OS
+    -硬件设备驱动
+    -NIC（网卡）
+    -硬件等
+
+网页请求过程：
+  -浏览器从地址栏解析出域名
+  -浏览器根据域名，从本地host文件或DNS服务器，查询出ip地址
+  -浏览器解析端口
+  -建立TCP连接
+  -http生成针对目标服务器的请求报文
+  -浏览器向服务器发送请求
+  -TCP将http请求报文分割成报文段
+  -ip中转
+  -服务器接受报文段，重组报文段
+  -服务器返回应答头
+  -服务器返回数据
+  -浏览器关闭连接
+
+网页渲染过程：
+  -解析HTML
+  -构建DOM树
+    -外部样式会阻塞后续脚本执行，直到外部样式加载并解析完毕
+    -外部样式不会阻塞后续外部脚本的加载，但会阻塞外部脚本的执行
+    -如果后续外部脚本含有async属性（IE下为defer），则外部样式不会阻塞该脚本的加载与执行
+    -如果先引样式，再引js，则样式加载完，即进行页面渲染，不受js影响；否则，等js加载与执行完，才会页面渲染
+    -js边加载边执行
+  -DOM树与CSS样式进行附着构造呈现树
+  -布局
+  -绘制
+
+
+URI（统一资源标识符）
+  -http://user:pass@www.xx.com:80/aa/index.html?uid=1#pageid=1
+URL（统一资源标识定位符）
+URI包含URL
+
+请求报文
+  -例：
+    GET /form/query HTTP/1.1
+    
+    Host: xxx.html
+    Connection: keep-alive
+    Content-Type: application/x-www-form-urlencoded
+    Content-Length: 16
+
+    name=arnold&age=111111
+
+  -请求方法
+  -请求URI
+  -协议版本
+  -请求首部字节
+  -内容实体
+
+响应报文
+  -例：
+    HTTP/1.1 200 OK
+
+    Date: Tue, 10 Jul 2012 06:01:01 GMT
+    Content-Length: 762
+    Content-Type: text/html
+
+    <html>
+    ...
+    </html>
+
+  -协议版本
+  -状态码
+  -状态码原因短语
+  -响应首部字节
+  -响应主体
+
+HTTP方法
+  -GET：获取资源
+  -POST：传输实体主体
+  -PUT：传输文件
+  -HEAD：获取报文首部
+  -OPTIONS：询问支持的方法
+  -TRACE：追踪路径
+
+
+
+
+
+
+
