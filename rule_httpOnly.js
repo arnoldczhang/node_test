@@ -1,6 +1,10 @@
 //rule scheme :
 
 module.exports = {
+  summary() {
+
+  },
+
   replaceRequestData(req, data) {
     const url = req.url;
     if (/ajax\/\w+\/addr\w+/.test(url)) {
@@ -32,10 +36,11 @@ module.exports = {
   replaceResponseHeader(req,res,header){
       header = header || {};
       const host = req.headers.host;
-      if (/takeaway\.51ping\.com/.test(host)) {
+      let result;
+      if (result = host.match(/takeaway(\.[^\.]+ping\.com)/)) {
         const dper = (req.headers.cookie.match(/dper=([^;]+)/) || [])[1];
         if (dper) {
-          header["Set-Cookie"] = `dper=${dper}; Path=/; domain=.51ping.com; HttpOnly`;
+          header["Set-Cookie"] = `dper=${dper}; Path=/; domain=${result[1]}; HttpOnly`;
         }
       }
       return header;
