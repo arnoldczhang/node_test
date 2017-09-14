@@ -104,12 +104,6 @@ URI包含URL
   -TRACE：追踪路径
   -CONNECT：与代理服务器建立隧道
 
-###编码方式
-  -gzip
-  -compress
-  -deflate
-  -identity
-
 ###内容协议
   -服务器驱动协商
   -客户端驱动协商
@@ -145,7 +139,7 @@ URI包含URL
     -安全通讯
 
 ###HTTP报文首部
-  -通用
+  -通用首部字段
     -Cach-Control：控制缓存机制
       -no-cache：不缓存过期资源
       -no-store：真正的不缓存
@@ -161,7 +155,7 @@ URI包含URL
     -Connection：HTTP/1.1默认都是keep-alive
       -控制不再转发给代理服务器的首部字段
       -管理持久链接，例：Connection: close
-    -Date
+    -Date：
     -Pragma：1.1之前遗留字段
       -no-cache
     -Trailer：说明报文主体记录的首部字段
@@ -170,8 +164,23 @@ URI包含URL
     -Upgrade：检查HTTP协议能否升级到高级版本
       -使用时，要额外指定Connection: Upgrade
     -Via：请求和响应的传输路径
-      -
-  -请求
+    -Warning：缓存相关的警告
+      -[警告码] [警告主机:端口号] "[警告内容]" [日期时间]
+  -请求首部字段
+    -Accept：客户端可接受的媒体类型
+      -text/html、image/jpeg;
+      -;q=0~1：表前面的权重
+    -Accept-Charset：字符集
+      -;q=0~1：表前面的权重
+    -Accept-Encoding：内容编码
+      -;q=0~1：表前面的权重
+      -gzip
+      -compress
+      -deflate
+      -identity
+    -Accept-Language：
+    -Expect：客户端要求服务端的期望的扩展
+    -From：
   -响应
   -实体
 
