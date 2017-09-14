@@ -40,7 +40,7 @@ module.exports = {
       if (result = host.match(/takeaway(\.[^\.]+ping\.com)/)) {
         const dper = (req.headers.cookie.match(/dper=([^;]+)/) || [])[1];
         if (dper) {
-          header["Set-Cookie"] = `dper=${dper}; Path=/; domain=${result[1]}; HttpOnly`;
+          header["set-cookie"].push(`dper=${dper}; Domain=${result[1]}; HttpOnly`);
         }
       }
       return header;

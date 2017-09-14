@@ -74,7 +74,7 @@ URI包含URL
   -请求方法
   -请求URI
   -协议版本
-  -请求、通用、实体首部字节
+  -请求、通用、实体首部字节（8位组字节）
   -内容主体
 
 ###响应报文
@@ -103,6 +103,95 @@ URI包含URL
   -OPTIONS：询问支持的方法
   -TRACE：追踪路径
   -CONNECT：与代理服务器建立隧道
+
+###编码方式
+  -gzip
+  -compress
+  -deflate
+  -identity
+
+###内容协议
+  -服务器驱动协商
+  -客户端驱动协商
+  -透明协商
+
+###状态码
+  -2xx：成功
+    -204：请求成功，无内容返回
+    -206：请求部分内容，请求头包含Range，响应头包含content-range
+  -3xx：重定向
+    -301：永久重定向，路径最后/
+    -302：临时重定向
+    -303：类似302，强制使用get方式请求
+    -304：服务器接受附带条件的请求，但是未满足条件，无响应主体
+      -附带条件指请求报文中含有If-Math、If-Modified-Since、If-Range...
+    -307：临时重定向，不强制post->get
+  -4xx：客户端错误，服务器无法处理请求
+    -400：请求报文存在语法错误
+    -401：请求头包含Authorization，表示客户端提供的身份认证
+    -403：forbidden
+    -404：服务器无请求资源
+  -5xx：服务端错误，服务器处理请求出错
+    -500：
+    -503：服务器暂时无法提供服务，响应头包含Retry-After，表示恢复日期
+
+###转发
+  -代理
+    -缓存数据
+    -修改报文
+  -网关
+    -类似代理，可提供非http协议
+  -隧道
+    -安全通讯
+
+###HTTP报文首部
+  -通用
+    -Cach-Control：控制缓存机制
+      -no-cache：不缓存过期资源
+      -no-store：真正的不缓存
+      -max-age=time：资源缓存最长时间
+      -s-maxage：类似max-age，针对多个用户，使用后，会忽视max-age和Expires字段
+      -public：其他用户也能使用缓存
+      -private：
+      -min-fresh=time：已经过了time的资源，不再作为响应返回
+      -max-stale=time：即使过期，只要处于time内，缓存资源都会照常接受
+      -only-if-cached：客户端仅在服务端存在缓存时，才会返回，无响应返回504
+      -must-revalidate：代理会向原服务器验证即将返回的响应缓存，是否有效，会忽略max-stale
+      -no-transform：缓存无法改变实体主体的媒体类型
+    -Connection：HTTP/1.1默认都是keep-alive
+      -控制不再转发给代理服务器的首部字段
+      -管理持久链接，例：Connection: close
+    -Date
+    -Pragma：1.1之前遗留字段
+      -no-cache
+    -Trailer：说明报文主体记录的首部字段
+    -Transfer-Encoding：传输报文主体时采用的编码
+      -chunked
+    -Upgrade：检查HTTP协议能否升级到高级版本
+      -使用时，要额外指定Connection: Upgrade
+    -Via：请求和响应的传输路径
+      -
+  -请求
+  -响应
+  -实体
+
+###首部类型
+  -逐跳首部
+    -Connection
+    -Keep-Alive
+    -Authenticate
+    -Authorization
+    -Trailer
+    -TE
+    -Transfer-Encoding
+    -Upgrade
+  -端到端首部
+    -除以上其他所有
+
+
+
+
+
 
 
 
