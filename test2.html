@@ -1,6 +1,39 @@
 <!DOCTYPE html>
 <html>
 <head>
+<style type="text/css">
+#container {
+  height: 200px;
+  width: 100%;
+  position: relative;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch
+}
+#bbox {
+  height: 50px;
+  background-color: yellow;
+}
+#box {
+  height: 200px;
+  position: absolute;
+  left: 0;
+  right: 0;
+  background-color: green;
+  top: 50px;
+  overflow: hidden;
+}
+#scroll-out {
+  height: 250px;
+  background-color: red;
+  overflow: scroll;
+}
+#scroll {
+  height: 1000px;
+}
+.scroll {
+  height: auto!important;
+}
+</style>
 <title>test</title>
 <meta content="text/html; charset=utf-8">
 <meta charset="utf-8">
@@ -11,64 +44,77 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 </head>
 <body>
-<div id="container"></div>
+<style type="text/css">
+  * {
+    padding: 0;
+    margin: 0;
+  }
+  #index {
+    width: 100%;
+    overflow: hidden;
+    -webkit-overflow-scrolling: touch;
+  }
+  #container {
+    width: 100%;
+    height: 100%;
+    height: 100vh;
+    box-sizing: content-box;
+    overflow-y: auto;
+  }
+  #header {
+    width: 100%;
+    height: 100px;
+    background-color: red;
+  }
+  #tab {
+    height: 50px;
+    position: -webkit-sticky;
+    position: sticky;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background-color: yellow;
+  }
+  #body {
+    height: 2074px;
+    background-color: green;
+    overflow-y: hidden;
+  }
+  .fixed {
+    position: fixed;
+  }
+</style>
+</head>
+<body>
+<div id="index">
+  <div id="container">
+    <div id="header"></div>
+    <div id="tab"></div>
+    <div id="body">
+      aaaaa
+    </div>
+  </div>
+</div>
 <script type="text/javascript">
-// context
-var context = {
-  body: {},
-  response: {},
-  request: {}
-};
+var container = document.querySelector('#container');
+var header = document.querySelector('#header');
 
-Object.defineProperties(context.response, {
-  body: {
-    get: function () {
-      return context.body;
-    },
-    set: function (value) {
-      context.body = value;
+if (/Android/.test(navigator.userAgent)) {
+  container.style.height = window.innerHeight + 'px';
+  container.onscroll = function (e) {
+    if (e.currentTarget.scrollTop >= 100) {
+      tab.classList.add('fixed');
+    } else {
+      tab.classList.remove('fixed');
     }
-  }
-});
+  };
+}
 
-// response
-var response = {};
-Object.defineProperty(response, 'body', {
-  get: function () {
-    return this._body;
-  },
-  set: function (value) {
-    this._body = value;
-  }
-});
-
-// request
-var request = {};
-
-function Koa () {
-  this.context = Object.create(context);
-  this.response = Object.create(response);
-  this.request = Object.create(request);
-  this.context.response = Object.create(this.response);
-  // this.response.context = this.context;
-};
-
-Koa.prototype = {
-  use: function (cb) {
-    cb(this.context);
-    return this;
-  }
-};
-
-var app = new Koa();
-
-app.use(function (ctx) {
-  ctx.body = 'aa';
-}).use(function (ctx) {
-  ctx.response.body = 'bb';
-}).use(function (ctx) {
-  console.log(ctx.body);
-});
 </script>
+<script type="text/javascript" src="https://www.google-analytics.com/ga.js"></script>
+<script type="text/javascript" src="./test/test.js"></script>
+<script type="text/javascript" src="http://s1.51ping.com/mod/app-m-waimai-mainchannelnew/1.11.3-beta/src/pages/indexv1/init.js"></script>
+<link rel="stylesheet" type="text/css" href="http://www.51testing.com/css/space.css">
+
 </body>
 </html>

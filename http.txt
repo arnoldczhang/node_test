@@ -21,6 +21,10 @@
     -NIC（网卡）
     -硬件等
 
+
+
+
+
 ###网页请求过程：
   -浏览器从地址栏解析出域名
   -浏览器根据域名，从本地host文件或DNS服务器，查询出ip地址
@@ -34,6 +38,9 @@
   -服务器返回应答头
   -服务器返回数据
   -浏览器关闭连接
+
+
+
 
 ###网页渲染过程：
   -解析HTML
@@ -49,6 +56,9 @@
   -布局
   -绘制
 
+
+
+
 ###单独资源服务器的意义
   -单独域名下请求不会发cookie，节省流量，提升上传效率
   -动静分离，减少核心服务器的压力
@@ -59,6 +69,9 @@ URI（统一资源标识符）
   -http://user:pass@www.xx.com:80/aa/index.html?uid=1#pageid=1
 URL（统一资源标识定位符）
 URI包含URL
+
+
+
 
 ###请求报文
   -例：
@@ -76,6 +89,9 @@ URI包含URL
   -协议版本
   -请求、通用、实体首部字节（8位组字节）
   -内容主体
+
+
+
 
 ###响应报文
   -例：
@@ -95,6 +111,9 @@ URI包含URL
   -响应、通用、实体首部字节
   -响应主体
 
+
+
+
 ###HTTP方法
   -GET：获取资源
   -POST：传输实体主体
@@ -104,10 +123,16 @@ URI包含URL
   -TRACE：追踪路径
   -CONNECT：与代理服务器建立隧道
 
+
+
+
 ###内容协议
   -服务器驱动协商
   -客户端驱动协商
   -透明协商
+
+
+
 
 ###状态码
   -2xx：成功
@@ -117,9 +142,9 @@ URI包含URL
     -301：永久重定向，路径最后/
     -302：临时重定向
     -303：类似302，强制使用get方式请求
-    -304：服务器接受附带条件的请求，但是未满足条件，无响应主体
+    -304：未变更，服务器接受附带条件的请求，但是未满足条件，无响应主体
       -附带条件指请求报文中含有If-Math、If-Modified-Since、If-Range...
-    -307：临时重定向，不强制post->get
+    -307：类似307，不强制post->get
   -4xx：客户端错误，服务器无法处理请求
     -400：请求报文存在语法错误
     -401：请求头包含Authorization，表示客户端提供的身份认证
@@ -128,6 +153,9 @@ URI包含URL
   -5xx：服务端错误，服务器处理请求出错
     -500：
     -503：服务器暂时无法提供服务，响应头包含Retry-After，表示恢复日期
+
+
+
 
 ###转发
   -代理
@@ -138,17 +166,20 @@ URI包含URL
   -隧道
     -安全通讯
 
+
+
+
 ###HTTP报文首部
   -通用首部字段
     -Cach-Control：控制缓存机制
       -no-cache：不缓存过期资源
       -no-store：真正的不缓存
-      -max-age=time：资源缓存最长时间
+      -max-age=${time}：资源缓存最长时间
       -s-maxage：类似max-age，针对多个用户，使用后，会忽视max-age和Expires字段
       -public：其他用户也能使用缓存
       -private：
-      -min-fresh=time：已经过了time的资源，不再作为响应返回
-      -max-stale=time：即使过期，只要处于time内，缓存资源都会照常接受
+      -min-fresh=${time}：已经过了time的资源，不再作为响应返回
+      -max-stale=${time}：即使过期，只要处于time内，缓存资源都会照常接受
       -only-if-cached：客户端仅在服务端存在缓存时，才会返回，无响应返回504
       -must-revalidate：代理会向原服务器验证即将返回的响应缓存，是否有效，会忽略max-stale
       -no-transform：缓存无法改变实体主体的媒体类型
@@ -179,10 +210,70 @@ URI包含URL
       -deflate
       -identity
     -Accept-Language：
+    -Authorization：
     -Expect：客户端要求服务端的期望的扩展
-    -From：
-  -响应
-  -实体
+      -100-continue
+    -From：使用代理的用户邮箱
+    -Host：指定域名，针对单个ip下部署了多个域名的情况
+    -If-Match：条件请求，当If-Match与Etag一致时，服务器才会接受请求
+    -If-Modified-Since：指定日期后资源更新了，服务器才会接受响应；
+      否则返回304，通过Last-Modified字段来确认时间
+    -If-None-match：与If-Match相反，与Etag不一致，才处理请求；
+    -If-Range：与Etag一致，则作为范围请求，否则返回所有资源
+    -If-Unmodified-Since：
+    -Max-Forwards：使用TRACE或OPTION时，才有用；为0时，服务器立即返回响应
+    -Proxy-Authorization：
+    -Range：
+    -Referer：请求的原始资源URI
+    -TE：客户端可以处理的传输编码
+    -User-Agent：
+  -响应首部字段
+    -Accept-Ranges：服务器能否处理范围请求
+      -byte
+      -none
+    -Age：源服务器多久前创建了连接；若对于缓存服务器，表示缓存后，发起认证-》认证完成时间；
+      代理创建响应，必须带上
+    -ETag：实体标识
+      -强Etag：实体任何更改都会改变其值
+      -弱Etag：只用于提示资源是否相同；变化会在开始加'W/'
+    -Location：将响应方引导到某个与请求URI位置不同的资源
+    -Proxy-Authenticate：将代理服务器所需要的认证信息发送给客户端
+    -Retry-After：格式是Date或秒数
+    -Server：当前服务器应用程序信息
+    -Vary：代理服务器会根据Vary中指定的字段与获取的请求对比，一致，则直接从缓存返回响应；
+      否则从源服务器获取资源，再返回
+    -WWW-Authenticate：用于http访问认证
+  -实体首部字段（请求+响应）
+    -Allow：对于指定资源，服务端支持的http方法
+      -GET
+      -...
+    -Content-Type：媒体类型
+    -Content-Encoding：服务器对实体主体的编码方式
+    -Content-Language：
+    -Content-Length：单位字节，主体部分大小
+    -Content-Location：报文主体返回资源对应的URI
+    -Content-MD5：客户端会执行md5，解析报文主体，与这个字段作比较
+    -Content-Range：
+    -Expires：资源失效日期，如果不希望缓存，值设成Date即可；
+      Cach-Control有指定max-age的话，优先max-age；
+    -Last-Modified：
+  -Cookie相关首部字段
+    -Set-Cookie：
+      -NAME=VALUE
+      -expires=DATE：默认到浏览器关闭时为止
+      -path=PATH：默认文档所在文件目录
+      -domain=域名：默认创建cookie的服务器域名
+      -Secure：https下才会发送cookie
+      -HttpOnly：js无法访问cookie
+    -Cookie：
+  -其他首部字段
+    -x-xss-protection：xss防护开关
+      -0：设置xss为无效状态
+      -1
+    -X-：多用此开头，作为自定义非标准参数  
+
+
+
 
 ###首部类型
   -逐跳首部
