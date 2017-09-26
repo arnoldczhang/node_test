@@ -21,6 +21,7 @@
     "@types/webpack": "^3.0.7",
     "@types/webpack-dev-middleware": "^1.9.2",
     "anyproxy": "^3.10.4",
+    "arr-flatten": "^1.1.0",
     "array-first": "^1.0.2",
     "autoprefixer": "^6.3.3",
     "awesome-typescript-loader": "^3.2.3",
